@@ -1,6 +1,19 @@
 pipeline {
     agent any
 
+    parameters {
+        choice(
+            name: 'ENVIRONMENT', 
+            choices: ['dev', 'staging', 'prod'], 
+            description: 'Sur quel environnement on bosse ?'
+        )
+        string(
+            name: 'INSTANCE_NAME', 
+            defaultValue: 'mon-serveur-mazda', 
+            description: 'Nom de l\'instance à créer'
+        )
+    }
+
     stages {
         stage('Checkout') {
             steps {
