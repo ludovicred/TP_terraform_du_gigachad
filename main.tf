@@ -46,7 +46,7 @@ resource "aws_subnet" "private2" {
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main.id
 
-  tags = { Name = "igw-main" }
+  tags = { Name = "igw-main-${var.nom_du_client}" }
 }
 
 # ─── NAT GATEWAY (placée dans pub1, sert les privés) ─────────────────────────
@@ -142,7 +142,7 @@ resource "aws_security_group" "sg_lb" {
 }
 
 resource "aws_security_group" "sg_web" {
-  name   = "sgweb-servers"
+  name   = "sgweb-servers-${var.nom_du_client}"
   vpc_id = aws_vpc.main.id
 
   ingress {
@@ -251,7 +251,7 @@ resource "terraform_data" "web2_userdata" {
 # ─── APPLICATION LOAD BALANCER ───────────────────────────────────────────────
 
 resource "aws_lb" "alb" {
-  name               = "alb-main"
+  name               = "alb-main-${var.nom_du_client}"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.sg_lb.id]
@@ -261,7 +261,7 @@ resource "aws_lb" "alb" {
 }
 
 resource "aws_lb_target_group" "tg_web" {
-  name     = "tg-web"
+  name     = "tg-web-${var.nom_du_client}"
   port     = 80
   protocol = "HTTP"
   vpc_id   = aws_vpc.main.id

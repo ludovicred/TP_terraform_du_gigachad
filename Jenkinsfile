@@ -4,7 +4,7 @@ pipeline {
     parameters {
         choice(
             name: 'Client', 
-            choices: ['Mazda', 'Marc', 'Mairie2Chateauroux'], // J'ai viré les espaces pour être safe
+            choices: ['Mazda', 'Marc', 'Mairie2Chateauroux'],
             description: 'Quel client ?'
         )
         choice(
@@ -13,7 +13,8 @@ pipeline {
             description: 'Sur quel environnement ?'
         )
         string(
-            name: 'pour_le_fun',  
+            name: 'pour_le_fun',
+            defaultValue: '',  // ✅ Ajout du defaultValue manquant
             description: 'message ecrit dans le log'
         )
     }
@@ -28,7 +29,6 @@ pipeline {
 
         stage('Terraform Init') {
             steps {
-                // On utilise -reconfigure pour pouvoir changer de client/env à chaque build
                 sh "terraform init -reconfigure -backend-config='key=${params.Client}-${params.ENVIRONMENT}.tfstate'"
             }
         }
@@ -41,10 +41,14 @@ pipeline {
 
         stage('Terraform Plan') {
             steps {
-                // Ici on injecte directement la variable comme tu l'as suggéré
                 sh "terraform plan -var='nom_du_client=${params.Client}' -out=tfplan"
             }
         }
+        stage('Terraform Apply') {
+    steps {
+        sh "terraform apply -var='nom_du_client=${params.Client}' tfplan"
+    }
+}
     }
 }
 
