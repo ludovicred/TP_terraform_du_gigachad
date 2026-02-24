@@ -173,7 +173,7 @@ resource "aws_security_group" "sg_web" {
 
 resource "aws_key_pair" "ssh_key" {
   key_name   = "web-key"
-  public_key = file("/sshkey/pubkeymoi.pub")
+  public_key = file("sshkey/pubkeymoi.pub")
 }
 
 # ─── EC2 SERVEURS WEB ─────────────────────────────────────────────────────────
