@@ -22,7 +22,7 @@ pipeline {
             defaultValue: '',
             description: 'message ecrit dans le log'
         )
-    }
+    )
 
     stages {
         stage('Checkout') {
@@ -39,7 +39,7 @@ pipeline {
         }
 
         stage('Terraform Validate') {
-            when { expression { params.ACTION == 'apply' } }  // inutile pour un destroy
+            when { expression { params.ACTION == 'apply' } }
             steps {
                 sh 'terraform validate'
             }
@@ -71,10 +71,11 @@ pipeline {
                 sh "terraform destroy -auto-approve"
             }
         }
-        post{
-            always {
-                cleanWs()
-            }
+    }  // ✅ fin des stages
+
+    post {  // ✅ post au même niveau que stages, pas dedans
+        always {
+            cleanWs()
         }
     }
 }
