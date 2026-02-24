@@ -2,19 +2,31 @@ pipeline {
     agent any
 
     stages {
-        stage('Build') {
+        stage('Checkout') {
             steps {
-                echo 'Building..'
+                checkout scm
             }
         }
-        stage('Test') {
+
+        stage('Terraform Init') {
             steps {
-                echo 'Testing..'
+                // Pas besoin de credentials ici, le rôle EC2 s'en occupe
+                sh 'terraform init'
             }
         }
-        stage('Deploy') {
+
+        stage('Terraform Plan') {
             steps {
-                echo 'Deploying....'
+                sh 'terraform plan -out=tfplan'
+            }
+        }
+
+        stage('Terraform Apply') {
+            when {
+                branch 'main'
+            }
+            steps {
+                sh 'terraform apply -auto-approve tfplan'
             }
         }
     }
