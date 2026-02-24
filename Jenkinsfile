@@ -12,9 +12,14 @@ pipeline {
             choices: ['dev', 'val', 'prod'], 
             description: 'Sur quel environnement ?'
         )
+        choice(
+            name: 'ACTION',
+            choices: ['apply', 'destroy'],
+            description: 'Que faire ?'
+        )
         string(
             name: 'pour_le_fun',
-            defaultValue: '',  // ✅ Ajout du defaultValue manquant
+            defaultValue: '',
             description: 'message ecrit dans le log'
         )
     }
@@ -34,21 +39,38 @@ pipeline {
         }
 
         stage('Terraform Validate') {
+            when { expression { params.ACTION == 'apply' } }  // inutile pour un destroy
             steps {
                 sh 'terraform validate'
             }
         }
 
         stage('Terraform Plan') {
+            when { expression { params.ACTION == 'apply' } }
             steps {
                 sh "terraform plan -var='nom_du_client=${params.Client}' -out=tfplan"
             }
         }
+
+        stage('Approval') {
+            steps {
+                input message: "Confirmer ${params.ACTION} sur ${params.Client} - ${params.ENVIRONMENT} ?", ok: 'Confirmer'
+            }
+        }
+
         stage('Terraform Apply') {
-    steps {
-        sh "terraform apply -var='nom_du_client=${params.Client}' tfplan"
-    }
-}
+            when { expression { params.ACTION == 'apply' } }
+            steps {
+                sh 'terraform apply tfplan'
+            }
+        }
+
+        stage('Terraform Destroy') {
+            when { expression { params.ACTION == 'destroy' } }
+            steps {
+                sh "terraform destroy -var='nom_du_client=${params.Client}' -auto-approve"
+            }
+        }
     }
 }
 
