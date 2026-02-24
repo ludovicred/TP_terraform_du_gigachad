@@ -5,27 +5,33 @@ variable "vpc_cidr" {
 }
 
 variable "nom_du_vpc" {
-    type = string
-    default = "vpc_trop_cool_de_moi"
+  type    = string
+  default = "vpc_trop_cool_de_moi"
 }
 
 
 variable "sub_priv1" {
-    type = string
-    default = "10.0.21.0/24"
+  type    = string
+  default = "10.0.21.0/24"
 }
 
 variable "sub_priv2" {
-    type = string
-    default = "10.0.22.0/24"
+  type    = string
+  default = "10.0.22.0/24"
 }
 
 variable "sub_pub1" {
-    type = string
-    default = "10.0.11.0/24"
+  type    = string
+  default = "10.0.11.0/24"
 }
 
 variable "sub_pub2" {
-    type = string
-    default = "10.0.12.0/24"
+  type    = string
+  default = "10.0.12.0/24"
+}
+
+
+variable "nom_du_client" {
+  type        = string
+  description = "Le nom du client (ex: mazda, renault, etc.)"
 }

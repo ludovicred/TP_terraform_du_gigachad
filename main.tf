@@ -14,7 +14,7 @@ resource "aws_subnet" "public1" {
   cidr_block        = var.sub_pub1
   availability_zone = "us-east-1a"
 
-  tags = { Name = "subnet-pub1" }
+  tags = { Name = "subnet-pub1-${var.nom_du_client}" }
 }
 
 resource "aws_subnet" "public2" {
@@ -22,7 +22,7 @@ resource "aws_subnet" "public2" {
   cidr_block        = var.sub_pub2
   availability_zone = "us-east-1b"
 
-  tags = { Name = "subnet-pub2" }
+  tags = { Name = "subnet-pub2-${var.nom_du_client}" }
 }
 
 resource "aws_subnet" "private1" {
@@ -30,7 +30,7 @@ resource "aws_subnet" "private1" {
   cidr_block        = var.sub_priv1
   availability_zone = "us-east-1a"
 
-  tags = { Name = "subnet-priv1" }
+  tags = { Name = "subnet-priv1-${var.nom_du_client}" }
 }
 
 resource "aws_subnet" "private2" {
@@ -38,7 +38,7 @@ resource "aws_subnet" "private2" {
   cidr_block        = var.sub_priv2
   availability_zone = "us-east-1b"
 
-  tags = { Name = "subnet-priv2" }
+  tags = { Name = "subnet-priv2-${var.nom_du_client}" }
 }
 
 # ─── INTERNET GATEWAY ────────────────────────────────────────────────────────
@@ -59,7 +59,7 @@ resource "aws_nat_gateway" "natgw" {
   allocation_id = aws_eip.nat.id
   subnet_id     = aws_subnet.public1.id
 
-  tags = { Name = "natgw-main" }
+  tags = { Name = "natgw-main-${var.nom_du_client}" }
 }
 
 # ─── TABLE RPB (publique) ────────────────────────────────────────────────────
@@ -105,7 +105,7 @@ resource "aws_route_table" "private" {
     gateway_id = "local"
   }
 
-  tags = { Name = "table-rpv" }
+  tags = { Name = "table-rpv-${var.nom_du_client}" }
 }
 
 resource "aws_route_table_association" "priv1" {
@@ -121,7 +121,7 @@ resource "aws_route_table_association" "priv2" {
 # ─── SECURITY GROUPS ─────────────────────────────────────────────────────────
 
 resource "aws_security_group" "sg_lb" {
-  name   = "sgload-balancer"
+  name   = "sgload-balancer-${var.nom_du_client}"
   vpc_id = aws_vpc.main.id
 
   ingress {
@@ -166,13 +166,13 @@ resource "aws_security_group" "sg_web" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = { Name = "sg-web" }
+  tags = { Name = "sg-web-${var.nom_du_client}" }
 }
 
 # ─── KEY PAIR SSH ─────────────────────────────────────────────────────────────
 
 resource "aws_key_pair" "ssh_key" {
-  key_name   = "web-key"
+  key_name   = "web-key-${var.nom_du_client}"
   public_key = file("sshkey/pubkeymoi.pub")
 }
 
@@ -195,7 +195,7 @@ locals {
     apt-get install -y apache2
     systemctl start apache2
     systemctl enable apache2
-    echo "<h1>Serveur Web 1</h1>" > /var/www/html/index.html
+    echo "<h1>Serveur Web 1 de ${var.nom_du_client}</h1>" > /var/www/html/index.html
     EOF
   )
 
@@ -205,7 +205,7 @@ locals {
     apt-get install -y apache2
     systemctl start apache2
     systemctl enable apache2
-    echo "<h1>Serveur Web 2</h1>" > /var/www/html/index.html
+    echo "<h1>Serveur Web 2 ${var.nom_du_client} </h1>" > /var/www/html/index.html
     EOF
   )
 }
@@ -222,7 +222,7 @@ resource "aws_instance" "web1" {
     replace_triggered_by = [terraform_data.web1_userdata]
   }
 
-  tags = { Name = "srv-web1" }
+  tags = { Name = "srv-web1-${var.nom_du_client}" }
 }
 
 resource "terraform_data" "web1_userdata" {
@@ -241,7 +241,7 @@ resource "aws_instance" "web2" {
     replace_triggered_by = [terraform_data.web2_userdata]
   }
 
-  tags = { Name = "srv-web2" }
+  tags = { Name = "srv-web2-${var.nom_du_client}" }
 }
 
 resource "terraform_data" "web2_userdata" {
@@ -257,7 +257,7 @@ resource "aws_lb" "alb" {
   security_groups    = [aws_security_group.sg_lb.id]
   subnets            = [aws_subnet.public1.id, aws_subnet.public2.id]
 
-  tags = { Name = "alb-main" }
+  tags = { Name = "alb-main-${var.nom_du_client}" }
 }
 
 resource "aws_lb_target_group" "tg_web" {

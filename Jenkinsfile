@@ -3,14 +3,18 @@ pipeline {
 
     parameters {
         choice(
+            name: 'Client', 
+            choices: ['Mazda', 'Marc', 'Mairie2Chateauroux'], // J'ai viré les espaces pour être safe
+            description: 'Quel client ?'
+        )
+        choice(
             name: 'ENVIRONMENT', 
-            choices: ['dev', 'staging', 'prod'], 
-            description: 'Sur quel environnement on bosse ?'
+            choices: ['dev', 'val', 'prod'], 
+            description: 'Sur quel environnement ?'
         )
         string(
-            name: 'INSTANCE_NAME', 
-            defaultValue: 'mon-serveur-mazda', 
-            description: 'Nom de l\'instance à créer'
+            name: 'pour_le_fun',  
+            description: 'message ecrit dans le log'
         )
     }
 
@@ -18,25 +22,27 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
+                echo "Message : ${params.pour_le_fun}"
             }
         }
 
         stage('Terraform Init') {
             steps {
-                sh 'terraform init'
+                // On utilise -reconfigure pour pouvoir changer de client/env à chaque build
+                sh "terraform init -reconfigure -backend-config='key=${params.Client}-${params.ENVIRONMENT}.tfstate'"
             }
         }
 
         stage('Terraform Validate') {
             steps {
-                // Vérifie que la syntaxe de tes fichiers .tf est correcte
                 sh 'terraform validate'
             }
         }
 
         stage('Terraform Plan') {
             steps {
-                sh 'terraform plan -out=tfplan'
+                // Ici on injecte directement la variable comme tu l'as suggéré
+                sh "terraform plan -var='nom_du_client=${params.Client}' -out=tfplan"
             }
         }
     }
