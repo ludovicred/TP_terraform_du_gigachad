@@ -48,7 +48,7 @@ pipeline {
         stage('Terraform Plan') {
             when { expression { params.ACTION == 'apply' } }
             steps {
-                sh "terraform plan -var='nom_du_client=${params.Client}' -out=tfplan"
+                sh "terraform plan -var='nom_du_client=${params.Client}' -var='env=${params.ENVIRONMENT}' -out=tfplan"
             }
         }
 
@@ -68,7 +68,7 @@ pipeline {
         stage('Terraform Destroy') {
             when { expression { params.ACTION == 'destroy' } }
             steps {
-                sh "terraform destroy -var='nom_du_client=${params.Client}' -auto-approve"
+                sh "terraform destroy -var='nom_du_client=${params.Client}' -var='env=${params.ENVIRONMENT}' -auto-approve"
             }
         }
     }  // ✅ fin des stages
