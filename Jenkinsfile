@@ -22,7 +22,7 @@ pipeline {
             defaultValue: '',
             description: 'message ecrit dans le log'
         )
-    )
+    }
 
     stages {
         stage('Checkout') {
