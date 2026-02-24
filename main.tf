@@ -14,7 +14,7 @@ resource "aws_subnet" "public1" {
   cidr_block        = var.sub_pub1
   availability_zone = "us-east-1a"
 
-  tags = { Name = "subnet-pub1-${var.nom_du_client}" }
+  tags = { Name = "subnet-pub1-${var.nom_du_client}-${var.env}" }
 }
 
 resource "aws_subnet" "public2" {
@@ -22,7 +22,7 @@ resource "aws_subnet" "public2" {
   cidr_block        = var.sub_pub2
   availability_zone = "us-east-1b"
 
-  tags = { Name = "subnet-pub2-${var.nom_du_client}" }
+  tags = { Name = "subnet-pub2-${var.nom_du_client}-${var.env}" }
 }
 
 resource "aws_subnet" "private1" {
@@ -30,7 +30,7 @@ resource "aws_subnet" "private1" {
   cidr_block        = var.sub_priv1
   availability_zone = "us-east-1a"
 
-  tags = { Name = "subnet-priv1-${var.nom_du_client}" }
+  tags = { Name = "subnet-priv1-${var.nom_du_client}-${var.env}" }
 }
 
 resource "aws_subnet" "private2" {
@@ -38,7 +38,7 @@ resource "aws_subnet" "private2" {
   cidr_block        = var.sub_priv2
   availability_zone = "us-east-1b"
 
-  tags = { Name = "subnet-priv2-${var.nom_du_client}" }
+  tags = { Name = "subnet-priv2-${var.nom_du_client}-${var.env}" }
 }
 
 # ─── INTERNET GATEWAY ────────────────────────────────────────────────────────
@@ -46,7 +46,7 @@ resource "aws_subnet" "private2" {
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main.id
 
-  tags = { Name = "igw-main-${var.nom_du_client}" }
+  tags = { Name = "igw-main-${var.nom_du_client}-${var.env}" }
 }
 
 # ─── NAT GATEWAY (placée dans pub1, sert les privés) ─────────────────────────
@@ -59,7 +59,7 @@ resource "aws_nat_gateway" "natgw" {
   allocation_id = aws_eip.nat.id
   subnet_id     = aws_subnet.public1.id
 
-  tags = { Name = "natgw-main-${var.nom_du_client}" }
+  tags = { Name = "natgw-main-${var.nom_du_client}-${var.env}" }
 }
 
 # ─── TABLE RPB (publique) ────────────────────────────────────────────────────
@@ -105,7 +105,7 @@ resource "aws_route_table" "private" {
     gateway_id = "local"
   }
 
-  tags = { Name = "table-rpv-${var.nom_du_client}" }
+  tags = { Name = "table-rpv-${var.nom_du_client}-${var.env}" }
 }
 
 resource "aws_route_table_association" "priv1" {
@@ -121,7 +121,7 @@ resource "aws_route_table_association" "priv2" {
 # ─── SECURITY GROUPS ─────────────────────────────────────────────────────────
 
 resource "aws_security_group" "sg_lb" {
-  name   = "sgload-balancer-${var.nom_du_client}"
+  name   = "sgload-balancer-${var.nom_du_client}-${var.env}"
   vpc_id = aws_vpc.main.id
 
   ingress {
@@ -142,7 +142,7 @@ resource "aws_security_group" "sg_lb" {
 }
 
 resource "aws_security_group" "sg_web" {
-  name   = "sgweb-servers-${var.nom_du_client}"
+  name   = "sgweb-servers-${var.nom_du_client}-${var.env}"
   vpc_id = aws_vpc.main.id
 
   ingress {
@@ -166,13 +166,13 @@ resource "aws_security_group" "sg_web" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = { Name = "sg-web-${var.nom_du_client}" }
+  tags = { Name = "sg-web-${var.nom_du_client}-${var.env}" }
 }
 
 # ─── KEY PAIR SSH ─────────────────────────────────────────────────────────────
 
 resource "aws_key_pair" "ssh_key" {
-  key_name   = "web-key-${var.nom_du_client}"
+  key_name   = "web-key-${var.nom_du_client}-${var.env}"
   public_key = file("sshkey/pubkeymoi.pub")
 }
 
@@ -222,7 +222,7 @@ resource "aws_instance" "web1" {
     replace_triggered_by = [terraform_data.web1_userdata]
   }
 
-  tags = { Name = "srv-web1-${var.nom_du_client}" }
+  tags = { Name = "srv-web1-${var.nom_du_client}-${var.env}" }
 }
 
 resource "terraform_data" "web1_userdata" {
@@ -241,7 +241,7 @@ resource "aws_instance" "web2" {
     replace_triggered_by = [terraform_data.web2_userdata]
   }
 
-  tags = { Name = "srv-web2-${var.nom_du_client}" }
+  tags = { Name = "srv-web2-${var.nom_du_client}-${var.env}" }
 }
 
 resource "terraform_data" "web2_userdata" {
@@ -251,17 +251,17 @@ resource "terraform_data" "web2_userdata" {
 # ─── APPLICATION LOAD BALANCER ───────────────────────────────────────────────
 
 resource "aws_lb" "alb" {
-  name               = "alb-main-${var.nom_du_client}"
+  name               = "alb-main-${var.nom_du_client}-${var.env}"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.sg_lb.id]
   subnets            = [aws_subnet.public1.id, aws_subnet.public2.id]
 
-  tags = { Name = "alb-main-${var.nom_du_client}" }
+  tags = { Name = "alb-main-${var.nom_du_client}_${var.env}" }
 }
 
 resource "aws_lb_target_group" "tg_web" {
-  name     = "tg-web-${var.nom_du_client}"
+  name     = "tg-web-${var.nom_du_client}-${var.env}"
   port     = 80
   protocol = "HTTP"
   vpc_id   = aws_vpc.main.id

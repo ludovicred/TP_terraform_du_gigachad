@@ -35,3 +35,8 @@ variable "nom_du_client" {
   type        = string
   description = "Le nom du client (ex: mazda, renault, etc.)"
 }
+
+variable "env" {
+  type        = string
+  description = "environnement"
+}
