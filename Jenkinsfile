@@ -68,7 +68,12 @@ pipeline {
         stage('Terraform Destroy') {
             when { expression { params.ACTION == 'destroy' } }
             steps {
-                sh "terraform destroy -var='nom_du_client=${params.Client}' -auto-approve"
+                sh "terraform destroy -auto-approve"
+            }
+        }
+        post{
+            always {
+                cleanWs()
             }
         }
     }
